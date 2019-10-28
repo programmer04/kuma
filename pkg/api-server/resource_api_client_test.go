@@ -6,7 +6,10 @@ import (
 	"github.com/Kong/kuma/pkg/api-server"
 	"github.com/Kong/kuma/pkg/api-server/definitions"
 	config "github.com/Kong/kuma/pkg/config/api-server"
+	managers_mesh "github.com/Kong/kuma/pkg/core/managers/apis/mesh"
+	"github.com/Kong/kuma/pkg/core/resources/apis/mesh"
 	"github.com/Kong/kuma/pkg/core/resources/manager"
+	"github.com/Kong/kuma/pkg/core/resources/model"
 	"github.com/Kong/kuma/pkg/core/resources/store"
 	"github.com/Kong/kuma/pkg/test"
 	sample_proto "github.com/Kong/kuma/pkg/test/apis/sample/v1alpha1"
@@ -101,6 +104,8 @@ func createTestApiServer(store store.ResourceStore, config config.ApiServerConfi
 		TrafficRouteWsDefinition,
 		definitions.MeshWsDefinition,
 	}
-	resources := manager.NewResourceManager(store)
+	resources := manager.NewCustomizableResourceManager(manager.NewResourceManager(store), map[model.ResourceType]manager.ResourceManager{
+		mesh.DataplaneType: managers_mesh.NewDataplaneManager(store),
+	})
 	return api_server.NewApiServer(resources, defs, config)
 }
